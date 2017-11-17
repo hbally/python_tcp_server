@@ -46,7 +46,7 @@ class Chat(Protocol):
     def connectionLost(self, reason):
         log.msg("[%s]:断线" % self.phone_number.encode('utf-8'))
         if self.phone_number in self.users:
-            del self.users[self.phone_number]
+            del self.factory.users[self.phone_number]
 
     def dataReceived(self, data):
         """
@@ -153,8 +153,9 @@ class Chat(Protocol):
         header = [length, version, command_id]
         header_pack = struct.pack('!3I', *header)
         for phone_number in phone_numbers:
-            if phone_number in self.users.keys():
-                self.users[phone_number].transport.write(header_pack + send_content)
+            #比如users，在每个Protocol里面不保存，直接存储在Factory里面，每次引用的时候，直接去取就可以了
+            if phone_number in self.factory.users.keys():
+                self.factory.users[phone_number].transport.write(header_pack + send_content)
             else:
                 log.msg("Phone_number:%s 不在线,不能聊天." % phone_number.encode('utf-8'))
 
